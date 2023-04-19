@@ -1,20 +1,23 @@
 const express = require("express");
+const { join } = require("path");
 const morgan = require("morgan");
 const helmet = require("helmet");
-const { join } = require("path");
-
 const app = express();
 
-const port = process.env.SERVER_PORT || 3000;
-
 app.use(morgan("dev"));
+app.use(helmet());
+app.use(express.static(join(__dirname, "public")));
 
-app.use(
-  helmet({
-    contentSecurityPolicy: false,
-  })
-);
+app.get("/auth_config.json", (req, res) => {
+  res.sendFile(join(__dirname, "auth_config.json"));
+});
 
-app.use(express.static(join(__dirname, "build")));
+app.get("/*", (_, res) => {
+  res.sendFile(join(__dirname, "index.html"));
+});
 
-app.listen(port, () => console.log(`Server listening on port ${port}`));
+process.on("SIGINT", function() {
+  process.exit();
+});
+
+module.exports = app;
